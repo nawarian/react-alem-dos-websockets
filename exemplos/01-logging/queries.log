@@ -1,0 +1,3 @@
+[2016-10-02 20:29:37] queries.log.INFO: SELECT * FROM produto;  [] []
+[2016-10-02 20:29:52] queries.log.INFO: INSERT INTO produto VALUES (2, Teste [] []
+[2016-10-02 20:29:57] queries.log.INFO: SELECT * FROM produto;  [] []

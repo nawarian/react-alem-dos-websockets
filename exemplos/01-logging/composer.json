@@ -1,0 +1,8 @@
+{
+    "require": {
+        "monolog/monolog": "^1.21",
+        "react/stream": "^0.4.4",
+        "react/event-loop": "^0.4.2",
+        "react/child-process": "^0.4.1"
+    }
+}
