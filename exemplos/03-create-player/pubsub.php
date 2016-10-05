@@ -35,19 +35,13 @@ class PubSub implements MessageComponentInterface
     public function onMessage(ConnectionInterface $from, $message)
     {
         if ($msg = json_decode($message)) {
-            foreach ($this->clients as $client) {
-                if ($client === $from) {
-                    // continue;
-                }
-
-                switch ($msg->type) {
-                    case 'publish':
-                        $this->handlePush($from, $msg);
-                        break;
-                    case 'subscribe':
-                        $this->handleSubscribe($from, $msg);
-                        break;
-                }
+            switch ($msg->type) {
+                case 'publish':
+                    $this->handlePush($from, $msg);
+                    break;
+                case 'subscribe':
+                    $this->handleSubscribe($from, $msg);
+                    break;
             }
         }
     }
@@ -62,11 +56,16 @@ class PubSub implements MessageComponentInterface
     public function handlePush(ConnectionInterface $client, $msg)
     {
         $event = $msg->event;
+        $enviados = new \SplObjectStorage();
+
         foreach ($this->subscribers as $subEvent => $subscribers) {
-            if (
-                $subEvent == 'all' || $event == $subEvent
-            ) {
+            if ($event == $subEvent) {
                 foreach ($subscribers as $sub) {
+                    if ($enviados->contains($sub)) {
+                        continue;
+                    }
+
+                    $enviados->attach($sub);
                     $sub->send(json_encode($msg));
                 }
             }
