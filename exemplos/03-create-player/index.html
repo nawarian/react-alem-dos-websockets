@@ -1,0 +1,108 @@
+<html>
+  <head>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+          <h3>
+            Create Player
+            <button class="btn btn-warning pull-right">
+              Gerar Aleatórios
+            </button>
+          </h3>
+          <hr>
+        </div>
+      </div>
+
+      <div class="row">
+
+        <div class="col-md-12">
+          <h3>
+            Eventos
+          </h3>
+          <ul id="eventos"></ul>
+        </div>
+
+      </div>
+    </div>
+  </body>
+
+  <script>
+    function Client() {}
+    Client.prototype = {
+      listening: {},
+      onMessage: function (msg) {
+        var json = JSON.parse(msg.data);
+        var evt = json.event;
+
+        if (this.listening[evt]) {
+          for (var i in this.listening[evt]) {
+            var callback = this.listening[evt][i];
+            callback.apply(this, [json]);
+          }
+        }
+      },
+
+      connect: function (host) {
+        var that = this;
+        var ws = new WebSocket(host);
+        ws.onmessage = function () {
+          that.onMessage.apply(that, arguments);
+        }
+
+        this.ws = ws;
+      },
+
+      _attachToEvent: function (evt) {
+        var msg = {
+          type: 'subscribe',
+          event: evt
+        };
+
+        this.ws.send(JSON.stringify(msg));
+      },
+
+      listenToEvent: function (evt, callback) {
+        this.listening[evt] = this.listening[evt] || [];
+        if (this.listening[evt].length == 0) {
+          this._attachToEvent(evt);
+          this.listening[evt].push(callback);
+        }
+      },
+
+
+      publish: function (event, content) {
+        content.type = 'publish';
+        content.event = event;
+
+        this.ws.send(JSON.stringify(content));
+      }
+    };
+
+    $(document).ready(function () {
+      function eventReceived(data) {
+        $('#eventos').append($(
+          '<li><span class="label label-success">:event</span> :content</li>'
+          .replace(':event', data.event)
+          .replace(':content', JSON.stringify(data))
+        ));
+      }
+
+      ws = new Client();
+      ws.connect('ws://localhost:8181');
+
+      setTimeout(function() {
+        ws.listenToEvent('create-player', eventReceived);
+        ws.listenToEvent('player-created', eventReceived);
+        ws.listenToEvent('skillset-created', eventReceived);
+        ws.listenToEvent('inventory-created', eventReceived);
+      }, 300);
+    });
+
+  </script>
+</html>
