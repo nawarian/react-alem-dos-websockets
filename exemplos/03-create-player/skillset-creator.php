@@ -26,7 +26,7 @@ $loop = Factory::create();
 
             $db->exec($sql);
 
-            $loop->addTimer(.5, function () use ($conn, $db, $mensagem) {
+            $loop->addTimer(6, function () use ($conn, $db, $mensagem) {
                 $conn->send(json_encode([
                     'type' => 'publish',
                     'event' => 'skillset-created'

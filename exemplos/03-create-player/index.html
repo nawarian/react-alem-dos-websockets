@@ -11,8 +11,8 @@
         <div class="col-md-12">
           <h3>
             Create Player
-            <button class="btn btn-warning pull-right">
-              Gerar Aleatórios
+            <button id="novo" class="btn btn-warning pull-right">
+              Novo
             </button>
           </h3>
           <hr>
@@ -102,6 +102,12 @@
         ws.listenToEvent('skillset-created', eventReceived);
         ws.listenToEvent('inventory-created', eventReceived);
       }, 300);
+
+      $('#novo').click(function () {
+        var name = window.prompt('Digite o nome do jogador');
+
+        ws.publish('create-player', {nome: name});
+      });
     });
 
   </script>
