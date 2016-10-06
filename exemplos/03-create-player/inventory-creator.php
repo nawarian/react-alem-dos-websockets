@@ -13,15 +13,15 @@ $loop = Factory::create();
         // Ao conectar-se, inscreva-se para receber mensagens de criação de jogadores
         $conn->send(json_encode([
             'type' => 'subscribe',
-            'event' => 'create-player'
+            'event' => 'player-created'
         ]));
 
         $conn->on('message', function($msg, $ws) use ($conn, $loop, $db) {
             $mensagem = json_decode((string) $msg);
 
             $sql =  sprintf(
-                        "INSERT INTO player (name) VALUES ('%s')",
-                        $mensagem->nome
+                        "INSERT INTO inventory (player_id) VALUES ('%s')",
+                        $mensagem->id
                     );
 
             $db->exec($sql);
@@ -29,9 +29,7 @@ $loop = Factory::create();
             $loop->addTimer(.5, function () use ($conn, $db, $mensagem) {
                 $conn->send(json_encode([
                     'type' => 'publish',
-                    'event' => 'player-created',
-                    'id' => $db->lastInsertId(),
-                    'name' => $mensagem->nome
+                    'event' => 'inventory-created'
                 ]));
             });
         });
