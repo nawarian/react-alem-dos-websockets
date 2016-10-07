@@ -10,9 +10,10 @@ $stdIn = new React\Stream\Stream(STDIN, $loop);
 $db = new \PDO('sqlite:data.db');
 
 $stdIn->on('data', function($input) use ($loop, $db) {
-    if ($stmt = $db->prepare($input)) {
-      if ($stmt->execute()) {
+    if (preg_match('/SELECT /', strtoupper($input))) {
+        $stmt = $db->query(trim($input));
         $res = $stmt->fetchAll(PDO::FETCH_CLASS);
+
         if (count($res)) {
             foreach ($res as $item) {
                 $props = get_object_vars($item);
@@ -23,7 +24,8 @@ $stdIn->on('data', function($input) use ($loop, $db) {
                 echo '------------------'.PHP_EOL;
             }
         }
-      }
+    } else if ($stmt = $db->prepare($input)) {
+        $stmt->execute();
     }
     $comando = "php log.php queries.log '{$input}'";
     (new Process($comando))->start($loop);
